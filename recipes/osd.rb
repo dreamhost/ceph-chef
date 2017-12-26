@@ -144,7 +144,7 @@ if node['ceph']['osd']['devices']
         f1=$(mktemp --tmpdir ceph-disk-prepare.1.XXXXXXXXXX)
         f2=$(mktemp --tmpdir ceph-disk-prepare.2.XXXXXXXXXX)
         test -e /sys/block/$data_nodev && ceph-disk list $data_nodev | tee $f1
-        ceph-disk -v prepare --cluster #{node['ceph']['cluster']} #{dmcrypt} --fs-type #{node['ceph']['osd']['fs_type']} $data #{osd_device['journal']}
+        ceph-disk -v prepare --cluster #{node['ceph']['cluster']} --filestore #{dmcrypt} --fs-type #{node['ceph']['osd']['fs_type']} $data #{osd_device['journal']}
         echo "ceph-disk AFTER"
         test -e /sys/block/$data_nodev && ceph-disk list $data_nodev | tee $f2
         # Do a trivial compare, find the only new line that matches 'ceph data'
