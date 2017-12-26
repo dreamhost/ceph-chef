@@ -1,5 +1,5 @@
 #
-# Author: Chris Jones <chris.jones@lambdastack.io, cjones303@bloomberg.net>
+# Author: Hans Chris Jones <chris.jones@lambdastack.io>
 # Cookbook: ceph-chef
 #
 # Copyright 2017, Bloomberg Finance L.P.
@@ -32,7 +32,7 @@ include_recipe 'ceph-chef::fsid'
 directory '/etc/ceph' do
   mode node['ceph']['mode']
   action :create
-  not_if 'test -f /etc/ceph'
+  not_if { ::File.file?("/etc/ceph") }
 end
 
 cookbook_file '/usr/bin/ceph-remove-clean' do

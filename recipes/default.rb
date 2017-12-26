@@ -1,5 +1,5 @@
 #
-# Author: Chris Jones <chris.jones@lambdastack.io, cjones303@bloomberg.net>
+# Author: Hans Chris Jones <chris.jones@lambdastack.io>
 # Cookbook: ceph
 #
 # Copyright 2017, Bloomberg Finance L.P.
@@ -24,7 +24,11 @@ include_recipe 'ceph-chef::conf'
 
 # Tools needed by cookbook
 node['ceph']['packages'].each do |pck|
-  package pck
+  v = ceph_exactversion(pck)
+  package pck do
+    action node['ceph']['package_action']
+    version v if v
+  end
 end
 
 # NOTE: The location of netaddr-1.5.1.gem is defaulted to /tmp. If one exists there then it will install that gem. If not,
@@ -35,18 +39,20 @@ end
 # has been bootstrapped with Chef - /opt/chef/embedded/bin/gem install --force --local /tmp/netaddr-1.5.1.gem
 # Of course, this means you have downloaded the gem from: https://rubygems.org/downloads/netaddr-1.5.1.gem and then
 # copied it to your /tmp directory.
-chef_gem 'netaddr-local' do
-  package_name 'netaddr'
-  source '/tmp/netaddr-1.5.1.gem'
-  action :install
-  compile_time true
-  only_if { File.exist?('/tmp/netaddr-1.5.1.gem') }
-end
+if node['ceph']['netaddr_install']
+  chef_gem 'netaddr-local' do
+    package_name 'netaddr'
+    source '/tmp/netaddr-1.5.1.gem'
+    action :install
+    compile_time true
+    only_if { File.exist?('/tmp/netaddr-1.5.1.gem') }
+  end
 
-chef_gem 'netaddr' do
-  action :install
-  compile_time true
-  not_if { File.exist?('/tmp/netaddr-1.5.1.gem') }
+  chef_gem 'netaddr' do
+    action :install
+    compile_time true
+    not_if { File.exist?('/tmp/netaddr-1.5.1.gem') }
+  end
 end
 
 if node['ceph']['pools']['radosgw']['federated_enable']

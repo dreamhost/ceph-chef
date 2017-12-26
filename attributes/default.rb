@@ -20,6 +20,16 @@
 # Change this if you want a different cluster name other than the default of ceph
 default['ceph']['cluster'] = 'ceph'
 
+# Set default keyring locations. These can be overriden by setting them after this loads.
+default['ceph']['keyring']['global'] = '/etc/ceph/$cluster.$name.keyring'
+# NB: Could leave others set to '' and template would skip or do the same for global
+default['ceph']['keyring']['mon'] = '/etc/ceph/$cluster.$name.keyring'
+default['ceph']['keyring']['mds'] = '/etc/ceph/$cluster.$name.keyring'
+default['ceph']['keyring']['rgw'] = '/etc/ceph/$cluster.client.radosgw'
+default['ceph']['keyring']['res'] = '/etc/ceph/$cluster.client.restapi'
+default['ceph']['keyring']['adm'] = '/etc/ceph/$cluster.client.admin.keyring'
+default['ceph']['keyring']['osd'] = '/var/lib/ceph/osd/$cluster-$id/keyring'
+
 default['ceph']['tuning']['osd_op_threads'] = 8
 default['ceph']['tuning']['osd_recovery_op_priority'] = 1
 default['ceph']['tuning']['osd_recovery_max_active'] = 1
@@ -44,7 +54,15 @@ default['ceph']['branch'] = 'stable' # Can be stable, testing or dev.
 
 # Major release version to install or gitbuilder branch
 # Must set this outside of this cookbook!
-# default['ceph']['version'] = 'hammer'
+# default['ceph']['version'] = 'jewel'
+#
+# Exact version within release to install
+# Must set this outside of this cookbook!
+# MUST be valid within node['ceph']['version']
+# default['ceph']['exactversion'] = '10.2.10'
+
+# What should the package action be?
+default['ceph']['package_action'] = :install
 
 default['ceph']['init_style'] = case node['platform']
                                 when 'ubuntu'
@@ -53,16 +71,9 @@ default['ceph']['init_style'] = case node['platform']
                                   'sysvinit'
                                 end
 
-# NOTE: If the version is 'hammer' then change owner and group to 'root'
-if node['ceph']['version'] == 'hammer'
-    default['ceph']['owner'] = 'root'
-    default['ceph']['group'] = 'root'
-    default['ceph']['mode'] = 0o0755
-else
-    default['ceph']['owner'] = 'ceph'
-    default['ceph']['group'] = 'ceph'
-    default['ceph']['mode'] = 0o0750
-end
+default['ceph']['owner'] = 'ceph'
+default['ceph']['group'] = 'ceph'
+default['ceph']['mode'] = 0o0750
 
 # Override these in your environment file or here if you wish. Don't put them in the 'ceph''config''global' section.
 # The public and cluster network settings are critical for proper operations.
@@ -103,6 +114,9 @@ default['ceph']['encrypted_data_bags'] = false
 default['ceph']['install_repo'] = true
 default['ceph']['btrfs'] = false
 
+# Install the netaddr gem
+default['ceph']['netaddr_install'] = true
+
 case node['platform_family']
 when 'debian'
   packages = ['ceph-common', 'python-pycurl']
@@ -115,3 +129,45 @@ when 'rhel', 'fedora'
 else
   default['ceph']['packages'] = []
 end
+
+# This is a complete list of packages that would get an exactversion suffix.
+# Without -dbg/-debug suffix.
+default['ceph']['versioned_packages'] = %w[
+  ceph
+  ceph-base
+  ceph-common
+  ceph-fuse
+  ceph-mds
+  ceph-mgr
+  ceph-mon
+  ceph-osd
+  ceph-resource-agents
+  ceph-test
+  libcephfs2
+  libcephfs-dev
+  libcephfs-java
+  libcephfs-jni
+  librados2
+  librados-dev
+  libradosstriper1
+  libradosstriper-dev
+  librbd1
+  librbd-dev
+  librgw2
+  librgw-dev
+  python3-ceph-argparse
+  python3-cephfs
+  python3-rados
+  python3-rbd
+  python3-rgw
+  python-ceph
+  python-cephfs
+  python-rados
+  python-rbd
+  python-rgw
+  radosgw
+  rados-objclass-dev
+  rbd-fuse
+  rbd-mirror
+  rbd-nbd
+]

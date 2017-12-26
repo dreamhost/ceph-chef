@@ -1,5 +1,5 @@
 #
-# Author: Chris Jones <chris.jones@lambdastack.io, cjones303@bloomberg.net>
+# Author: Hans Chris Jones <chris.jones@lambdastack.io>
 # Cookbook: ceph
 # Recipe: mon
 #
@@ -47,60 +47,6 @@ include_recipe 'ceph-chef::mon_install'
 
 service_type = node['ceph']['mon']['init_style']
 
-# If not using rbd then this is not required but it's included anyway
-if node['ceph']['version'] == 'hammer'
-  directory '/var/lib/qemu' do
-    owner 'root'
-    group 'root'
-    mode '0755'
-    recursive true
-    action :create
-  end
-
-  directory '/var/run/ceph' do
-    mode node['ceph']['mode']
-    recursive true
-    action :create
-    not_if 'test -d /var/run/ceph'
-  end
-
-  directory "/var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}" do
-    owner node['ceph']['owner']
-    group node['ceph']['group']
-    mode node['ceph']['mode']
-    recursive true
-    action :create
-    not_if "test -d /var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}"
-  end
-
-  directory '/var/lib/ceph/bootstrap-osd' do
-    owner node['ceph']['owner']
-    group node['ceph']['group']
-    mode node['ceph']['mode']
-    recursive true
-    action :create
-    not_if 'test -d /var/lib/ceph/bootstrap-osd'
-  end
-
-  directory '/var/lib/ceph/bootstrap-rgw' do
-    owner node['ceph']['owner']
-    group node['ceph']['group']
-    mode node['ceph']['mode']
-    recursive true
-    action :create
-    not_if 'test -d /var/lib/ceph/bootstrap-rgw'
-  end
-
-  directory '/var/lib/ceph/bootstrap-mds' do
-    owner node['ceph']['owner']
-    group node['ceph']['group']
-    mode node['ceph']['mode']
-    recursive true
-    action :create
-    not_if 'test -d /var/lib/ceph/bootstrap-mds'
-  end
-end
-
 # Create in a scratch area
 keyring = "#{node['ceph']['mon']['keyring_path']}/#{node['ceph']['cluster']}.mon.keyring"
 
@@ -111,7 +57,7 @@ execute 'format ceph-mon-secret as keyring' do
   user node['ceph']['owner']
   group node['ceph']['group']
   only_if { ceph_chef_mon_secret }
-  not_if "test -s #{keyring}"
+  not_if { ::File.size?("#{keyring}") }
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
 end
 
@@ -122,7 +68,7 @@ execute 'generate ceph-mon-secret as keyring' do
   user node['ceph']['owner']
   group node['ceph']['group']
   not_if { ceph_chef_mon_secret }
-  not_if "test -s #{keyring}"
+  not_if { ::File.size?("#{keyring}") }
   notifies :create, 'ruby_block[save ceph_chef_mon_secret]', :immediately
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
 end
@@ -161,7 +107,7 @@ execute 'ceph-mon mkfs' do
   creates "/var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/keyring"
   user node['ceph']['owner']
   group node['ceph']['group']
-  not_if "test -s /var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/keyring"
+  not_if { ::File.size?("/var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/keyring") }
 end
 
 ruby_block 'mon-finalize' do
@@ -170,19 +116,17 @@ ruby_block 'mon-finalize' do
       ::File.open("/var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/#{ack}", 'w').close
     end
   end
-  not_if "test -f /var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/done"
+  not_if { ::File.file?("/var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}/done") }
 end
 
-if node['ceph']['version'] != 'hammer'
-    # Include our overridden systemd file to handle starting the service during bootstrap
-    cookbook_file '/etc/systemd/system/ceph-mon@.service' do
-      notifies :run, 'execute[ceph-systemctl-daemon-reload]', :immediately
-      action :create
-      only_if { rhel? && systemd? }
-    end
+# Include our overridden systemd file to handle starting the service during bootstrap
+cookbook_file '/etc/systemd/system/ceph-mon@.service' do
+  notifies :run, 'execute[ceph-systemctl-daemon-reload]', :immediately
+  action :create
+  only_if { rhel? && systemd? }
+end
 
-    execute 'chown mon dir' do
-      command "chown -R #{node['ceph']['owner']}:#{node['ceph']['group']} /var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}"
-      only_if { rhel? && systemd? }
-    end
+execute 'chown mon dir' do
+  command "chown -R #{node['ceph']['owner']}:#{node['ceph']['group']} /var/lib/ceph/mon/#{node['ceph']['cluster']}-#{node['hostname']}"
+  only_if { rhel? && systemd? }
 end

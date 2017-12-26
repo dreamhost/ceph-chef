@@ -1,5 +1,5 @@
 #
-# Author: Chris Jones <chris.jones@lambdastack.io, cjones303@bloomberg.net>
+# Author: Hans Chris Jones <chris.jones@lambdastack.io>
 # Copyright 2017, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +18,11 @@
 include_recipe 'ceph-chef'
 
 node['ceph']['osd']['packages'].each do |pck|
-  package pck
+  v = ceph_exactversion(pck)
+  package pck do
+    action node['ceph']['package_action']
+    version v if v
+  end
 end
 
 include_recipe 'ceph-chef::install'

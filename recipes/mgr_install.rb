@@ -1,7 +1,5 @@
-#!/bin/bash
 #
-# Author:: Chris Jones <chris.jones@lambdastack.io, cjones303@bloomberg.net>
-#
+# Author: Hans Chris Jones <chris.jones@lambdastack.io>
 # Copyright 2017, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,15 +13,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 
-set -e
+include_recipe 'ceph-chef'
 
-# IMPORTANT: DANGER - DANGER - DANGER
-# Can only be ran from a Ceph node
+node['ceph']['mgr']['packages'].each do |pck|
+  v = ceph_exactversion(pck)
+  package pck do
+    action node['ceph']['package_action']
+    version v if v
+  end
+end
 
-for pool in $(rados lspools); do
-  for obj in $(rados -p $pool ls); do
-    echo "Removing $obj from pool $pool"
-    rados -p $pool rm $obj
-  done
-done
+include_recipe 'ceph-chef::install'

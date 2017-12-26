@@ -1,5 +1,5 @@
 #
-# Author: Chris Jones <chris.jones@lambdastack.io, cjones303@bloomberg.net>
+# Author: Hans Chris Jones <chris.jones@lambdastack.io>
 # Cookbook: ceph
 #
 # Copyright 2017, Bloomberg Finance L.P.
@@ -22,33 +22,31 @@ node.default['ceph']['is_radosgw'] = true
 include_recipe 'ceph-chef'
 include_recipe 'ceph-chef::radosgw_install'
 
-if node['ceph']['version'] == 'hammer'
-  directory '/var/log/radosgw' do
-    # owner node['ceph']['owner']
-    # group node['ceph']['group']
-    mode node['ceph']['mode']
-    action :create
-    not_if 'test -d /var/log/radosgw'
-  end
+directory '/var/log/radosgw' do
+  # owner node['ceph']['owner']
+  # group node['ceph']['group']
+  mode node['ceph']['mode']
+  action :create
+  not_if { ::File.directory?("/var/log/radosgw") }
+end
 
-  # If the directory does not exist already (on a dedicated node)
-  directory '/var/run/ceph' do
-    # owner node['ceph']['owner']
-    # group node['ceph']['group']
-    mode node['ceph']['mode']
-    action :create
-    not_if 'test -d /var/run/ceph'
-  end
+# If the directory does not exist already (on a dedicated node)
+directory '/var/run/ceph' do
+  # owner node['ceph']['owner']
+  # group node['ceph']['group']
+  mode node['ceph']['mode']
+  action :create
+  not_if { ::File.directory?("/var/run/ceph") }
+end
 
-  # This directory is only needed if you use the bootstrap-rgw key as part of the key generation for rgw.
-  # All bootstrap-xxx keys are created during the mon key creation in mon_keys.rb.
-  directory '/var/lib/ceph/bootstrap-rgw' do
-    owner node['ceph']['owner']
-    group node['ceph']['group']
-    mode node['ceph']['mode']
-    action :create
-    not_if 'test -d /var/lib/ceph/bootstrap-rgw'
-  end
+# This directory is only needed if you use the bootstrap-rgw key as part of the key generation for rgw.
+# All bootstrap-xxx keys are created during the mon key creation in mon_keys.rb.
+directory '/var/lib/ceph/bootstrap-rgw' do
+  owner node['ceph']['owner']
+  group node['ceph']['group']
+  mode node['ceph']['mode']
+  action :create
+  not_if { ::File.directory?("/var/lib/ceph/bootstrap-rgw") }
 end
 
 # IF you want specific recipes for civetweb then put them in the recipe referenced here.
@@ -56,12 +54,12 @@ include_recipe 'ceph-chef::radosgw_civetweb'
 
 execute 'osd-create-key-mon-client-in-directory' do
   command lazy { "ceph-authtool /etc/ceph/#{node['ceph']['cluster']}.mon.keyring --create-keyring --name=mon. --add-key=#{ceph_chef_mon_secret} --cap mon 'allow *'" }
-  not_if "test -s /etc/ceph/#{node['ceph']['cluster']}.mon.keyring"
+  not_if { ::File.size?("/etc/ceph/#{node['ceph']['cluster']}.mon.keyring") }
 end
 
 execute 'osd-create-key-admin-client-in-directory' do
   command lazy { "ceph-authtool /etc/ceph/#{node['ceph']['cluster']}.client.admin.keyring --create-keyring --name=client.admin --add-key=#{ceph_chef_admin_secret} --cap mon 'allow *' --cap osd 'allow *' --cap mds 'allow *'" }
-  not_if "test -s /etc/ceph/#{node['ceph']['cluster']}.client.admin.keyring"
+  not_if { ::File.size?("/etc/ceph/#{node['ceph']['cluster']}.client.admin.keyring") }
 end
 
 # Verifies or sets the correct mode only
@@ -109,7 +107,7 @@ end
 #     ceph-authtool -n "client.radosgw.#{node['hostname']}" --cap osd 'allow rwx' --cap mon 'allow rw' "/etc/ceph/#{node['ceph']['cluster']}.client.radosgw.keyring"
 #     ceph -k "#{base_key}" auth add client.radosgw.gateway -i "/etc/ceph/#{node['ceph']['cluster']}.client.radosgw.keyring"
 #   EOH
-#   not_if "test -s /etc/ceph/#{node['ceph']['cluster']}.client.radosgw.keyring"
+#   not_if { ::File.size?("/etc/ceph/#{node['ceph']['cluster']}.client.radosgw.keyring") }
 #   notifies :create, 'ruby_block[save radosgw_secret]', :immediately
 # end
 
@@ -124,18 +122,18 @@ end
 #         --name=client.radosgw.#{node['hostname']} \
 #         --add-key="$RGW_KEY"
 #   EOH
-#   not_if "test -s /var/lib/ceph/radosgw/#{node['ceph']['cluster']}-radosgw.#{node['hostname']}/keyring"
+#   not_if { ::File.size?("/var/lib/ceph/radosgw/#{node['ceph']['cluster']}-radosgw.#{node['hostname']}/keyring") }
 #   notifies :create, 'ruby_block[save radosgw_secret]', :immediately
 # end
 
 # execute 'update rgw keys' do
 #   command "ceph -k /etc/ceph/#{node['ceph']['cluster']}.client.admin.keyring auth add client.radosgw.#{node['hostname']} -i /var/lib/ceph/radosgw/#{node['ceph']['cluster']}-radosgw.#{node['hostname']}/keyring"
-#   only_if {"test -s /var/lib/ceph/radosgw/#{node['ceph']['cluster']}-#{node['hostname']}/keyring"}
+#   only_if { ::File.size("/var/lib/ceph/radosgw/#{node['ceph']['cluster']}-#{node['hostname']}/keyring") }
 # end
 
 # execute 'set rgw_permissions' do
 #   command lazy { "chmod 0644 /var/lib/ceph/radosgw/#{node['ceph']['cluster']}-radosgw.#{node['hostname']}/keyring" }
-#   only_if "test -s /var/lib/ceph/radosgw/#{node['ceph']['cluster']}-radosgw.#{node['hostname']}/keyring"
+#   only_if { ::File.size?("/var/lib/ceph/radosgw/#{node['ceph']['cluster']}-radosgw.#{node['hostname']}/keyring") }
 # end
 # End of comment block
 

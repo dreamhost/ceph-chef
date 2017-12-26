@@ -1,5 +1,5 @@
 #
-# Author: Chris Jones <chris.jones@lambdastack.io, cjones303@bloomberg.net>
+# Author: Hans Chris Jones <chris.jones@lambdastack.io>
 # Cookbook: ceph
 # Recipe: mon_keys
 #
@@ -37,7 +37,7 @@ include_recipe 'ceph-chef::bootstrap_osd_key'
 #     ceph_chef_save_bootstrap_rgw_secret(key.delete!("\n"))
 #   end
 #   not_if { ceph_chef_bootstrap_rgw_secret }
-#   only_if "test -s /var/lib/ceph/bootstrap-rgw/#{node['ceph']['cluster']}.keyring"
+#   only_if { ::File.size?("/var/lib/ceph/bootstrap-rgw/#{node['ceph']['cluster']}.keyring") }
 #   ignore_failure true
 # end
 #
@@ -50,6 +50,6 @@ include_recipe 'ceph-chef::bootstrap_osd_key'
 #     ceph_chef_save_bootstrap_mds_secret(key.delete!("\n"))
 #   end
 #   not_if { ceph_chef_bootstrap_mds_secret }
-#   only_if "test -s /var/lib/ceph/bootstrap-mds/#{node['ceph']['cluster']}.keyring"
+#   only_if { ::File.size?("/var/lib/ceph/bootstrap-mds/#{node['ceph']['cluster']}.keyring") }
 #   ignore_failure true
 # end

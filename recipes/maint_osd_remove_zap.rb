@@ -1,5 +1,5 @@
 #
-# Author:: Chris Jones <chris.jones@lambdastack.io, cjones303@bloomberg.net>
+# Author:: Hans Chris Jones <chris.jones@lambdastack.io>
 # Cookbook Name:: ceph
 #
 # Copyright 2017, Bloomberg Finance L.P.
@@ -78,7 +78,7 @@ if node['ceph']['osd']['remove']
 
     execute "remove mount directory - #{osd_device['device']}" do
       command lazy { "rm -rf /var/lib/ceph/osd/#{node['ceph']['cluster']}-#{osd_device['osd']}" }
-      only_if "test -d /var/lib/ceph/osd/#{node['ceph']['cluster']}-#{osd_device['osd']}"
+      only_if { ::File.directory?("/var/lib/ceph/osd/#{node['ceph']['cluster']}-#{osd_device['osd']}") }
     end
 
     # No guard on this - zap!! The only psuedo guard is if the 'zap' attribute was missing.
