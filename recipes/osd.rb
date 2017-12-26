@@ -1,5 +1,5 @@
 #
-# Author:: Chris Jones <chris.jones@lambdastack.io, cjones303@bloomberg.net>
+# Author:: Hans Chris Jones <chris.jones@lambdastack.io>
 # Cookbook Name:: ceph
 # Recipe:: osd
 #
@@ -69,35 +69,14 @@ directory '/etc/ceph/scripts' do
   mode node['ceph']['mode']
   recursive true
   action :create
-  not_if 'test -d /etc/ceph/scripts'
+  not_if { ::File.directory?("/etc/ceph/scripts") }
 end
 
 # Add ceph_journal.sh helper script to all OSD nodes and place it in /etc/ceph
 cookbook_file '/etc/ceph/scripts/ceph_journal.sh' do
   source 'ceph_journal.sh'
   mode node['ceph']['mode']
-  not_if 'test -f /etc/ceph/scripts/ceph_journal.sh'
-end
-
-if node['ceph']['version'] == 'hammer'
-  directory '/var/lib/ceph/bootstrap-osd' do
-    owner node['ceph']['owner']
-    group node['ceph']['group']
-    mode node['ceph']['mode']
-    recursive true
-    action :create
-    not_if 'test -d /var/lib/ceph/bootstrap-osd'
-  end
-
-  # Default data location - do not modify
-  directory '/var/lib/ceph/osd' do
-    owner node['ceph']['owner']
-    group node['ceph']['group']
-    mode node['ceph']['mode']
-    recursive true
-    action :create
-    not_if 'test -d /var/lib/ceph/osd'
-  end
+  not_if { ::File.file?("/etc/ceph/scripts/ceph_journal.sh") }
 end
 
 include_recipe 'ceph-chef::bootstrap_osd_key'
@@ -165,7 +144,7 @@ if node['ceph']['osd']['devices']
         f1=$(mktemp --tmpdir ceph-disk-prepare.1.XXXXXXXXXX)
         f2=$(mktemp --tmpdir ceph-disk-prepare.2.XXXXXXXXXX)
         test -e /sys/block/$data_nodev && ceph-disk list $data_nodev | tee $f1
-        ceph-disk -v prepare --cluster #{node['ceph']['cluster']} #{dmcrypt} --fs-type #{node['ceph']['osd']['fs_type']} $data #{osd_device['journal']}
+        ceph-disk -v prepare --cluster #{node['ceph']['cluster']} --filestore #{dmcrypt} --fs-type #{node['ceph']['osd']['fs_type']} $data #{osd_device['journal']}
         echo "ceph-disk AFTER"
         test -e /sys/block/$data_nodev && ceph-disk list $data_nodev | tee $f2
         # Do a trivial compare, find the only new line that matches 'ceph data'
