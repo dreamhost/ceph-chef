@@ -1,5 +1,5 @@
 #
-# Author: Chris Jones <chris.jones@lambdastack.io, cjones303@bloomberg.net>
+# Author: Hans Chris Jones <chris.jones@lambdastack.io>
 # Cookbook: ceph
 #
 # Copyright 2017, Bloomberg Finance L.P.
@@ -19,12 +19,3 @@
 
 # Add any finishing touches to the ceph install here.
 
-if node['ceph']['version'] == 'hammer'
-    case node['platform']
-    when 'ubuntu'
-    else
-      execute 'finish' do
-        command 'chkconfig ceph on'
-      end
-    end
-end

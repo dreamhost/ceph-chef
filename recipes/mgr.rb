@@ -1,5 +1,5 @@
 #
-# Author: Chris Jones <chris.jones@lambdastack.io, cjones303@bloomberg.net>
+# Author: Hans Chris Jones <chris.jones@lambdastack.io>
 # Copyright 2017, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,43 +16,48 @@
 #
 
 include_recipe 'ceph-chef'
+include_recipe 'ceph-chef::mgr_install'
 
 # NOTE: Only run this recipe after Ceph is running and only on Mon nodes.
 
-if node['ceph']['version'] != 'hammer' && node['ceph']['mgr']['enable']
+if node['ceph']['mgr']['enable']
   # NOTE: Ceph sets up structure automatically so the only thing needed is to enable and start the service
+  # robbat2: No it doesn't!
 
-  # cluster = node['ceph']['cluster']
-  #
-  # directory "/var/lib/ceph/mgr/#{cluster}-#{node['hostname']}" do
-  #   owner node['ceph']['owner']
-  #   group node['ceph']['group']
-  #   mode node['ceph']['mode']
-  #   recursive true
-  #   action :create
-  #   not_if "test -d /var/lib/ceph/mgr/#{cluster}-#{node['hostname']}"
-  # end
-  #
-  # # Put a different ceph-mgr unit file since we don't want it to create keys for us
-  # cookbook_file '/usr/lib/systemd/system/ceph-mgr@.service' do
-  #   source 'ceph-mgr.service'
-  #   mode 0644
-  # end
-  #
-  # keyring = "/var/lib/ceph/mgr/#{cluster}-#{node['hostname']}/keyring"
-  #
-  # execute 'format ceph-mgr-secret as keyring' do
-  #   command lazy { "ceph auth get-or-create mgr.#{node['hostname']} mon 'allow *' > #{keyring}" }
-  #   user node['ceph']['owner']
-  #   group node['ceph']['group']
-  #   # only_if { ceph_chef_mgr_secret }
-  #   not_if "test -f #{keyring}"
-  #   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
-  # end
-  #
+  cluster = node['ceph']['cluster']
+ 
+  mgrdir = "/var/lib/ceph/mgr/#{cluster}-#{node['hostname']}"
+  directory mgrdir do
+    owner node['ceph']['owner']
+    group node['ceph']['group']
+    mode node['ceph']['mode']
+    recursive true
+    action :create
+    not_if { ::File.directory?(mgrdir) }
+  end
+
+  keyring = "#{mgrdir}/keyring"
+  execute 'format ceph-mgr-secret as keyring' do
+    command lazy { "ceph auth get-or-create mgr.#{node['hostname']} mon 'allow profile mgr' osd 'allow *' mds 'allow *' > #{keyring}" }
+    user node['ceph']['owner']
+    group node['ceph']['group']
+    #only_if { ceph_chef_mgr_secret }
+    not_if { ::File.size?(keyring) }
+    sensitive true if Chef::Resource::Execute.method_defined? :sensitive
+  end
+
+  service_type = node['ceph']['mgr']['init_style']
+  ruby_block 'mgr-finalize' do
+    block do
+      ['done', service_type].each do |ack|
+        ::File.open("#{mgrdir}/#{ack}", 'w').close
+      end
+    end
+    not_if { ::File.file?("#{mgrdir}/done") }
+  end
 
   service 'ceph_mgr' do
-    case node['ceph']['radosgw']['init_style']
+    case node['ceph']['mgr']['init_style']
     when 'upstart'
       service_name 'ceph-mgr-all-starter'
       provider Chef::Provider::Service::Upstart

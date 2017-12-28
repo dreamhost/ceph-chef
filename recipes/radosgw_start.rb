@@ -1,5 +1,5 @@
 #
-# Author:: Chris Jones <chris.jones@lambdastack.io, cjones303@bloomberg.net>
+# Author:: Hans Chris Jones <chris.jones@lambdastack.io>
 # Cookbook Name:: ceph
 #
 # Copyright 2017, Bloomberg Finance L.P.
@@ -26,15 +26,11 @@ service 'radosgw-start' do
     if node['platform'] == 'debian'
       service_name 'radosgw'
     else
-      if node['ceph']['version'] != 'hammer'
-        # May want to do it another way - 'ceph-radosgw@radosgw.gateway' <-- Name of the service in ceph.conf
-        #  ('client.radosgw.gateway') less 'client' part based on stock unit file
-        # NB: Can supply your own unit file that allows for more custom radosgw naming.
-        service_name 'ceph-radosgw@radosgw.gateway'
-        provider Chef::Provider::Service::Systemd
-      else
-        service_name 'ceph-radosgw'
-      end
+      # May want to do it another way - 'ceph-radosgw@radosgw.gateway' <-- Name of the service in ceph.conf
+      #  ('client.radosgw.gateway') less 'client' part based on stock unit file
+      # NB: Can supply your own unit file that allows for more custom radosgw naming.
+      service_name 'ceph-radosgw@radosgw.gateway'
+      provider Chef::Provider::Service::Systemd
     end
   end
   supports :restart => true

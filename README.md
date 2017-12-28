@@ -5,9 +5,9 @@
 
 ## DESCRIPTION
 
-Installs and configures Ceph, a distributed network storage and filesystem designed to provide excellent performance, reliability, and scalability. Supports *Hammer* and higher releases (nothing below Hammer is supported in this repo).
+Installs and configures Ceph, a distributed network storage and filesystem designed to provide excellent performance, reliability, and scalability. Supports *Jewel* and higher releases (nothing below Jewel is supported in this repo).
 
->Once *Hammer* support has stopped in Ceph then it will be removed from this cookbook as an option.
+>Once *Jewel* support has stopped in Ceph then it will be removed from this cookbook as an option.
 
 The current version is focused on installing and configuring Ceph for Ubuntu, CentOS and RHEL.
 
@@ -28,7 +28,7 @@ Note: The documentation is a WIP along with a few other features. This repo is a
 For help, use **[Gitter chat](https://gitter.im/ceph/ceph-chef)**, **[mailing-list](mailto:ceph-users-join@lists.ceph.com)** or **[issues](https://github.com/ceph/ceph-chef/issues)** here in this repo.
 
 ### NOTE: Users of ceph-cookbook
-The original ceph-cookbook will remain and may continue to be updated (see that repo for specifics). We tried to use some of the interesting features of ceph-cookbook but we added a lot of enhancements and simplifications. Simply replacing ceph-cookbook with ceph-chef will not work without a few modifications. Also, ceph-chef only works with Chef 12.8+ and Hammer and higher. Nothing below the Hammer release of Ceph is supported in this repo. In addition, only **civitweb** is used going forward (not Apache).
+The original ceph-cookbook will remain and may continue to be updated (see that repo for specifics). We tried to use some of the interesting features of ceph-cookbook but we added a lot of enhancements and simplifications. Simply replacing ceph-cookbook with ceph-chef will not work without a few modifications. Also, ceph-chef only works with Chef 12.8+ and Jewel and higher. Nothing below the Jewel release of Ceph is supported in this repo. In addition, only **civetweb** is used going forward (not Apache).
 
 NOTE: The current LWRP are using the style prior to Chef version 12.5. There will be a new release shortly that will support the now recommended way of handling custom resources. To make that change easier we will be using a helper cookbook called Poise. Using Poise makes creating custom resources and common services very simple.
 
@@ -261,19 +261,17 @@ This cookbook uses Test Kitchen to verify functionality. A Pull Request can't be
 5. `bundle exec kitchen test aio-ubuntu-1204`
 6. `bundle exec kitchen test aio-ubuntu-1404`
 
-## LICENSE AND AUTHORS
-* Author: Chris Jones <chris.jones@lambdastack.io, cjones303@bloomberg.net>
+## AUTHORS
+* Author: Hans Chris Jones <chris.jones@lambdastack.io>
+NOTE: No longer with Bloomberg - * Author: Chris Jones <cjones303@bloomberg.net>
+Actively maintained by Hans Chris Jones, others from Bloomberg, Red Hat and other firms
 
-* Copyright 2017, Bloomberg Finance L.P.
+## CONTRIBUTIONS
+We welcome ALL contributions:
+1. Fork
+2. Create a feature branch
+3. Make changes
+4. Test
+5. Make Pull Request
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
- Unless required by applicable law or agreed to in writing, software
- distributed under the License is distributed on an "AS IS" BASIS,
- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- See the License for the specific language governing permissions and
- limitations under the License.
+Your changes will be tested and if all goes well it will be merged - Thanks!!

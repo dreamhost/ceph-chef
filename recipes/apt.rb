@@ -1,5 +1,5 @@
 #
-# Author: Chris Jones <chris.jones@lambdastack.io, cjones303@bloomberg.net>
+# Author: Hans Chris Jones <chris.jones@lambdastack.io>
 # Copyright 2017, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,7 @@ distribution_codename = node['lsb']['codename']
 
 apt_preference 'ceph_repo' do
   glob '*'
-  pin 'origin "ceph.com"'
+  pin 'origin "*.ceph.com"'
   pin_priority '1001'
 end
 
@@ -37,12 +37,13 @@ if node['ceph']['repo']['create']
   end
 
   # Only if ceph extras_repo is true
-  apt_repository 'ceph-extras' do
-    repo_name 'ceph-extras'
-    uri node['ceph']['debian']['extras']['repository']
-    distribution distribution_codename
-    components ['main']
-    key node['ceph']['debian']['extras']['repository_key']
-    only_if { node['ceph']['extras_repo'] }
+  if node['ceph']['debian']['extras']
+    apt_repository 'ceph-extras' do
+      repo_name 'ceph-extras'
+      uri node['ceph']['debian']['extras']['repository']
+      distribution distribution_codename
+      components ['main']
+      key node['ceph']['debian']['extras']['repository_key']
+    end
   end
 end

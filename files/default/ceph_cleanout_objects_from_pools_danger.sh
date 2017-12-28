@@ -1,6 +1,6 @@
+#!/bin/bash
 #
-# Author: Hans Chris Jones <chris.jones@lambdastack.io>
-# Cookbook: ceph
+# Author:: Hans Chris Jones <chris.jones@lambdastack.io>
 #
 # Copyright 2017, Bloomberg Finance L.P.
 #
@@ -15,12 +15,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-ruby_block 'gen ceph-fsid-secret' do
-  block do
-    require 'securerandom'
-    ceph_chef_save_fsid_secret(SecureRandom.uuid)
-  end
-  not_if { !ceph_chef_fsid_secret.nil? }
-end
+set -e
+
+# IMPORTANT: DANGER - DANGER - DANGER
+# Can only be ran from a Ceph node
+
+for pool in $(rados lspools); do
+  for obj in $(rados -p $pool ls); do
+    echo "Removing $obj from pool $pool"
+    rados -p $pool rm $obj
+  done
+done

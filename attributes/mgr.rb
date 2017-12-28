@@ -1,7 +1,4 @@
 #
-# Author: Hans Chris Jones <chris.jones@lambdastack.io>
-# Cookbook: ceph
-#
 # Copyright 2017, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,10 +14,20 @@
 # limitations under the License.
 #
 
-ruby_block 'gen ceph-fsid-secret' do
-  block do
-    require 'securerandom'
-    ceph_chef_save_fsid_secret(SecureRandom.uuid)
-  end
-  not_if { !ceph_chef_fsid_secret.nil? }
+include_attribute 'ceph-chef'
+
+default['ceph']['mgr']['init_style'] = node['ceph']['init_style']
+
+default['ceph']['mgr']['secret_file'] = '/etc/chef/secrets/ceph_chef_mgr'
+
+# MUST be set in the wrapper cookbook or chef-repo like project
+default['ceph']['mgr']['role'] = 'search-ceph-mgr'
+
+case node['platform_family']
+when 'debian'
+  packages = ['ceph-mgr']
+  packages += debug_packages(packages) if node['ceph']['install_debug']
+  default['ceph']['mgr']['packages'] = packages
+else
+  default['ceph']['mgr']['packages'] = []
 end

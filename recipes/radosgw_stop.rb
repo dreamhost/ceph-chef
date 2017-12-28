@@ -1,5 +1,5 @@
 #
-# Author:: Chris Jones <chris.jones@lambdastack.io, cjones303@bloomberg.net>
+# Author:: Hans Chris Jones <chris.jones@lambdastack.io>
 # Cookbook Name:: ceph
 #
 # Copyright 2017, Bloomberg Finance L.P.
@@ -28,12 +28,8 @@ service 'radosgw-stop' do
     if node['platform'] == 'debian'
       service_name 'radosgw'
     else
-      if node['ceph']['version'] != 'hammer'
-        service_name 'ceph-radosgw.target'
-        provider Chef::Provider::Service::Systemd
-      else
-        service_name 'ceph-radosgw'
-      end
+      service_name 'ceph-radosgw.target'
+      provider Chef::Provider::Service::Systemd
     end
   end
   action [:stop]

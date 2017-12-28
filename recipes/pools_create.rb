@@ -1,5 +1,5 @@
 #
-# Author: Chris Jones <chris.jones@lambdastack.io, cjones303@bloomberg.net>
+# Author: Hans Chris Jones <chris.jones@lambdastack.io>
 # Copyright 2017, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,8 +23,8 @@
 if node['ceph']['pools']['active']
   node['ceph']['pools']['active'].each do |pool|
     # Create pool and set type (replicated or erasure - default is replicated)
-    if pool == 'radosgw' && !node['ceph']['pools']['radosgw']['federated_regions'].empty? && node['ceph']['pools']['radosgw']['federated_enable']
-      # NOTE: *Must* have federated_regions and federated_zones if doing any federated processing!
+    if pool == 'radosgw' && !node['ceph']['pools']['radosgw']['federated_zonegroups'].empty? && node['ceph']['pools']['radosgw']['federated_enable']
+      # NOTE: *Must* have federated_zonegroups and federated_zones if doing any federated processing!
       ceph_chef_build_federated_pool(pool)
     end
 

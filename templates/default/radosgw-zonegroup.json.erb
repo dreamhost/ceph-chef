@@ -1,0 +1,43 @@
+{
+  "name": "<%= @name %>",
+  "api_name": "<%= @name %>",
+  "is_master": "true",
+  "endpoints": [
+    <% @endpoints.each_with_index do |h, index| -%>
+    <% next if h.nil? or h.empty? -%>
+      "<%= h %>"<%= ',' unless index == @endpoints.size - 1 %>
+    <% end -%>
+  ],
+  "hostnames": [
+      <% @s3hostnames.each_with_index do |h, index| -%>
+          "<%= h %>"<%= ',' unless index == @s3hostnames.size - 1 %>
+      <% end -%>
+  ],
+  "hostnames_s3website": [
+      <% @s3hostnames_website.each_with_index do |h, index| -%>
+          "<%= h %>"<%= ',' unless index == @s3hostnames.size - 1 %>
+      <% end -%>
+  ],
+  "master_zone": "<%= @master_zone %>",
+  "zones": [
+  <% @zones.each_with_index do |zone, index| %>
+        {
+          "name": "<%= zone['zonegroup'] %>-<%= zone['name'] %>",
+          "endpoints": [
+            "http:\/\/<%= zone['url'] %>:<%= zone['port'] %>\/"
+          ],
+          "log_meta": "<%= (zone['log_meta'] || true).to_s %>",
+          "log_data": "<%= (zone['log_data'] || true).to_s %>",
+          "bucket_index_max_shards": <%= zone['bucket_index_max_shards'] || 0 %>,
+          "read_only": "<%= (zone['read_only'] || false).to_s %>"
+        }<% if index < @zones.size %>,<% end %>
+  <% end %>
+  ],
+  "placement_targets": [
+   {
+     "name": "default-placement",
+     "tags": []
+   }
+  ],
+  "default_placement": "default-placement"
+}

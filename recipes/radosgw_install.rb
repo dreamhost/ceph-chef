@@ -1,5 +1,5 @@
 #
-# Author: Chris Jones <chris.jones@lambdastack.io, cjones303@bloomberg.net>
+# Author: Hans Chris Jones <chris.jones@lambdastack.io>
 # Copyright 2017, Bloomberg Finance L.P.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,24 +18,14 @@
 include_recipe 'ceph-chef'
 
 node['ceph']['radosgw']['packages'].each do |pck|
-  package pck
+  v = ceph_exactversion(pck)
+  package pck do
+    action node['ceph']['package_action']
+    version v if v
+  end
 end
 
 platform_family = node['platform_family']
-
-if node['ceph']['version'] == 'hammer'
-  case platform_family
-  when 'rhel'
-    # Known issue - https://access.redhat.com/solutions/1546303
-    # 2015-10-05
-    cookbook_file '/etc/init.d/ceph-radosgw' do
-      source 'ceph-radosgw'
-      owner 'root'
-      group 'root'
-      mode '0755'
-    end
-  end
-end
 
 cookbook_file '/usr/local/bin/radosgw-admin2' do
   source 'radosgw-admin2'
