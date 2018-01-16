@@ -57,10 +57,18 @@ default['ceph']['pools']['radosgw']['federated_zone_instances'] = [
   { 'name' => 'inst1', 'port' => 8080, 'zonegroup' => '', 'url' => 's3.rgw.ceph.example.com', 'handles' => 5, 'threads' => 100, 'log_meta' => true, 'log_data' => true, 'read_only' => false, 'bucket_index_max_shards' => 7 }
 ]
 
-# These two values *must* be set in your wrapper cookbook if using federated zonegroup/zone. They will be the root pool
-# name used. For example, zonegroup - .us.rgw.root, zone - .us-east.rgw.root (these do not include instances).
+# These two values can be set in your wrapper cookbook if using federated
+# zonegroup/zone with non-default pools. They will be the root pool name used.
+# For example, zonegroup - .us.rgw.root, zone - .us-east.rgw.root (these do not
+# include instances).
+#
+# The upstream recommendation is that ALL clusters should use .rgw.root unless
+# they need to run multiple disconnected logical RGW systems in a single Ceph
+# cluster. See http://ceph.com/wp-content/uploads/2016/07/Understanding-a-Multi-Site-Ceph-Gateway-Installation-170813.pdf
 default['ceph']['pools']['radosgw']['federated_zonegroup_root_pool_name'] = nil
 default['ceph']['pools']['radosgw']['federated_zone_root_pool_name'] = nil
+default['ceph']['pools']['radosgw']['federated_period_root_pool_name'] = nil
+default['ceph']['pools']['radosgw']['federated_realm_root_pool_name'] = nil
 
 # The cluster name will be prefixed to each name during the processing so only include the actual name.
 # default['ceph']['pools']['radosgw']['names'] = [

@@ -199,6 +199,13 @@
 
 <% if @is_rgw -%>
 <% if @is_federated -%>
+<% optional_keys = {
+     'realm' => inst['realm'] || nil,
+     'rgw realm root pool', =>  inst['realm_root_pool'] || node['ceph']['pools']['radosgw']['federated_realm_root_pool_name'] || nil,
+     'rgw period root pool', =>  inst['period_root_pool'] || node['ceph']['pools']['radosgw']['federated_period_root_pool_name'] || nil,
+     'rgw zonegroup root pool', =>  inst['zonegroup_root_pool'] || node['ceph']['pools']['radosgw']['federated_zonegroup_root_pool_name'] || nil,
+     'rgw zone root pool', =>  inst['zone_root_pool'] || node['ceph']['pools']['radosgw']['federated_zone_root_pool_name'] || nil,
+   } -%>
 <% node['ceph']['pools']['radosgw']['federated_zone_instances'].each do |inst| %>
 [client.radosgw.<%= inst['zonegroup'] %>-<%= inst['name'] %>]
   host = <%= node['hostname'] %>
@@ -206,9 +213,10 @@
   <% if node['ceph']['pools']['radosgw']['federated_enable_zonegroups_zones'] %>
     <% fullzonegroup = node['ceph']['pools']['radosgw']['federated_multisite_replication'] ? inst['zonegroup'] : "#{inst['zonegroup']}-#{inst['name']}" %>
   rgw zonegroup = <%= fullzonegroup %>
-  rgw zonegroup root pool = .<%= fullzonegroup %>.rgw.root
   rgw zone = <%= inst['zonegroup'] %>-<%= inst['name'] %>
-  rgw zone root pool = .<%= inst['zonegroup'] %>-<%= inst['name'] %>.rgw.root
+  <% optional_keys.reject { |k,v| v.nil? }.each do |k,v| -%>
+	<%= k -%> = <%= v %>
+  <% end -%>
   <% end # federated_enable_zonegroups_zones %>
   <% if !node['ceph']['keyring']['rgw'].empty? %>
   <% if node['ceph']['pools']['radosgw']['federated_multisite_replication'] %>
