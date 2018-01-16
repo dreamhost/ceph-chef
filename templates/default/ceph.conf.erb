@@ -201,10 +201,10 @@
 <% if @is_federated -%>
 <% optional_keys = {
      'realm' => inst['realm'] || nil,
-     'rgw realm root pool', =>  inst['realm_root_pool'] || node['ceph']['pools']['radosgw']['federated_realm_root_pool_name'] || nil,
-     'rgw period root pool', =>  inst['period_root_pool'] || node['ceph']['pools']['radosgw']['federated_period_root_pool_name'] || nil,
-     'rgw zonegroup root pool', =>  inst['zonegroup_root_pool'] || node['ceph']['pools']['radosgw']['federated_zonegroup_root_pool_name'] || nil,
-     'rgw zone root pool', =>  inst['zone_root_pool'] || node['ceph']['pools']['radosgw']['federated_zone_root_pool_name'] || nil,
+     'rgw realm root pool' =>  inst['realm_root_pool'] || node['ceph']['pools']['radosgw']['federated_realm_root_pool_name'] || nil,
+     'rgw period root pool' =>  inst['period_root_pool'] || node['ceph']['pools']['radosgw']['federated_period_root_pool_name'] || nil,
+     'rgw zonegroup root pool' =>  inst['zonegroup_root_pool'] || node['ceph']['pools']['radosgw']['federated_zonegroup_root_pool_name'] || nil,
+     'rgw zone root pool' =>  inst['zone_root_pool'] || node['ceph']['pools']['radosgw']['federated_zone_root_pool_name'] || nil,
    } -%>
 <% node['ceph']['pools']['radosgw']['federated_zone_instances'].each do |inst| %>
 [client.radosgw.<%= inst['zonegroup'] %>-<%= inst['name'] %>]
