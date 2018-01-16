@@ -52,13 +52,14 @@ if node['ceph']['pools']['radosgw']['federated_enable']
       group node['ceph']['group']
     end
 
-    directory "/var/lib/ceph/radosgw/#{node['ceph']['cluster']}-radosgw.#{inst['zonegroup']}-#{inst['name']}" do
+    rgw_dirname = "/var/lib/ceph/radosgw/#{node['ceph']['cluster']}-radosgw.#{inst['zonegroup']}-#{inst['name']}"
+    directory rgw_dirname do
       owner node['ceph']['owner']
       group node['ceph']['group']
       mode node['ceph']['mode']
       recursive true
       action :create
-      not_if { ::File.directory?("/var/lib/ceph/radosgw/#{node['ceph']['cluster']}-radosgw.#{inst['zonegroup']}-#{inst['name']}") }
+      not_if { ::File.directory?(rgw_dirname) }
     end
 
     # Check for existing keys first!
@@ -311,10 +312,10 @@ if node['ceph']['pools']['radosgw']['federated_enable']
     ruby_block "radosgw-finalize-#{zone}" do
       block do
         ['done', service_type].each do |ack|
-          ::File.open("/var/lib/ceph/radosgw/#{node['ceph']['cluster']}-radosgw.#{zone}/#{ack}", 'w').close
+          ::File.open("#{rgw_dirname}/#{ack}", 'w').close
         end
       end
-      not_if { ::File.file?("/var/lib/ceph/radosgw/#{node['ceph']['cluster']}-radosgw.#{zone}/done") }
+      not_if { ::File.file?("#{rgw_dirname}/done") }
     end
   end
 end
