@@ -21,7 +21,7 @@
   # to the cluster and public network options since they are all critical to every node.
   # List of all of the monitor nodes in the given cluster
   <% #Check ALL of the important vars before modifying them just in case their values are empty or nil. -%>
-  <% if !@mon_addresses.nil? && !@mon_addresses.empty? -%>
+  <% if !@mon_addresses.nil? && !@mon_addresses.empty? && !node['ceph']['config']['global']['mon_host'].nil? -%>
   mon host = <%= @mon_addresses.sort.join(', ') %>
   <% end -%>
   # Suppress warning of too many pgs
